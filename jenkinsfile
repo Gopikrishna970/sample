@@ -1,0 +1,40 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('contdownload'){
+            steps
+            {
+                git credentialsId: 'e883ab9d-ba31-4f79-ac29-03c5d1a9ca5c', url: 'https://github.com/intelliqittrainings/maven.git'
+            }
+        }
+        stage('contbuild'){
+            steps
+            {
+             sh 'mvn package'   
+            }    
+        }
+        stage('contdeployment'){
+            steps
+            {
+              deploy adapters: [tomcat9(credentialsId: 'e883ab9d-ba31-4f79-ac29-03c5d1a9ca5c', path: '', url: 'http://172.31.47.20:8080')], contextPath: 'mytestapp', war: '**/*.war'
+            }
+        }
+        stage('conttest'){
+            steps
+            {
+                git credentialsId: 'e883ab9d-ba31-4f79-ac29-03c5d1a9ca5c', url: 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+                sh 'java -jar /var/lib/jenkins/workspace/decalrativepipeline/testing.jar'
+                
+            }    
+        }
+        stage('contdelivery'){
+            steps
+            {
+            
+             deploy adapters: [tomcat9(credentialsId: 'e883ab9d-ba31-4f79-ac29-03c5d1a9ca5c', path: '', url: 'http://172.31.46.199:8080')], contextPath: 'myprodapp', war: '**/*.war'   
+            }    
+        }
+    }
+}
